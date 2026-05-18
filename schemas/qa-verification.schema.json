@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QA Verification",
+  "description": "QA re-verification results",
+  "type": "object",
+  "required": ["id", "track_id", "passed", "timestamp"],
+  "properties": {
+    "id": {"type": "string"},
+    "track_id": {"type": "string"},
+    "passed": {"type": "boolean"},
+    "test_results": {"type": "array"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

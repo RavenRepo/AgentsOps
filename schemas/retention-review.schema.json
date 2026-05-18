@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Retention Review",
+  "description": "Retention policy evaluation",
+  "type": "object",
+  "required": ["id", "track_id", "decision", "timestamp"],
+  "properties": {
+    "id": {"type": "string"},
+    "track_id": {"type": "string"},
+    "decision": {"type": "string", "enum": ["keep", "archive", "delete"]},
+    "reason": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

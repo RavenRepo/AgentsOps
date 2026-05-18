@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Approval Ledger Entry",
+  "description": "Immutable approval record (append-only)",
+  "type": "object",
+  "required": ["id", "timestamp", "decision", "risk_band"],
+  "properties": {
+    "id": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "decision": {"type": "string"},
+    "risk_band": {"type": "string", "enum": ["low", "medium", "high"]},
+    "reasoning": {"type": "string"},
+    "approver": {"type": "string"}
+  }
+}

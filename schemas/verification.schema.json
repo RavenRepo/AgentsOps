@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verification",
+  "description": "Coder verification results",
+  "type": "object",
+  "required": ["id", "track_id", "build_log", "artifacts", "timestamp"],
+  "properties": {
+    "id": {"type": "string"},
+    "track_id": {"type": "string"},
+    "build_log": {"type": "string"},
+    "artifacts": {"type": "array", "items": {"type": "string"}},
+    "hashes": {"type": "object"},
+    "errors": {"type": "array", "items": {"type": "string"}},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

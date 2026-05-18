@@ -1,0 +1,94 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.env.local
+.env.*.local
+secrets.env
+secrets.env.local
+venv/
+ENV/
+env/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.vim/
+
+# Project specific
+state/tracks/*/work/
+state/operator-summary.json
+state/operator-cockpit.html
+state/events.jsonl
+state/approval-ledger.jsonl
+
+# Logs
+*.log
+logs/
+
+# Agent workspaces
+examples/hermes-profiles/*/workspace/
+examples/openclaw-agents/*/workspace/
+
+# Backups
+*.backup
+*.bak
+*.tar.gz
+backups/
+
+# Test artifacts
+tests/fixtures/sample-artifacts/*.generated.json
+
+# OS files
+Thumbs.db
+.DS_Store

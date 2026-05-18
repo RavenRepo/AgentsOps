@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Verification Delta",
+  "description": "Differences between coder and QA verification",
+  "type": "object",
+  "required": ["id", "track_id", "anomalies", "timestamp"],
+  "properties": {
+    "id": {"type": "string"},
+    "track_id": {"type": "string"},
+    "anomalies": {"type": "array", "items": {"type": "object"}},
+    "severity": {"type": "string", "enum": ["critical", "major", "minor"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}

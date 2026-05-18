@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Main Review",
+  "description": "Main profile review decision",
+  "type": "object",
+  "required": ["id", "track_id", "decision", "reasoning", "timestamp"],
+  "properties": {
+    "id": {"type": "string"},
+    "track_id": {"type": "string"},
+    "decision": {"type": "string", "enum": ["approve", "reject", "revise"]},
+    "reasoning": {"type": "string"},
+    "risk_band": {"type": "string", "enum": ["low", "medium", "high"]},
+    "timestamp": {"type": "string", "format": "date-time"}
+  }
+}
