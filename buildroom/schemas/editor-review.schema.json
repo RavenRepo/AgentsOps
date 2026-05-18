@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/editor-review.schema.json",
+  "title": "Editor review",
+  "description": "Editor scoring + selected variant + reasoning. One per platform per track.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "review_id",
+    "track_id",
+    "platform",
+    "produced_by",
+    "produced_at",
+    "verdict"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "review_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "track_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "platform": {
+      "type": "string",
+      "enum": ["medium", "x", "linkedin", "substack"]
+    },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "model": { "type": "string" },
+    "verdict": {
+      "type": "string",
+      "enum": ["ready", "needs_revision", "kill"]
+    },
+    "selected_draft_id": {
+      "type": "string",
+      "description": "draft_id of the variant the editor recommends"
+    },
+    "scores": {
+      "type": "object",
+      "description": "Per-axis scores 0..10",
+      "additionalProperties": false,
+      "properties": {
+        "voice_match":      { "type": "number", "minimum": 0, "maximum": 10 },
+        "algo_fit":         { "type": "number", "minimum": 0, "maximum": 10 },
+        "originality":      { "type": "number", "minimum": 0, "maximum": 10 },
+        "evidence_quality": { "type": "number", "minimum": 0, "maximum": 10 },
+        "hook_strength":    { "type": "number", "minimum": 0, "maximum": 10 }
+      }
+    },
+    "concerns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["concern", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "concern": { "type": "string", "maxLength": 600 },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "minor", "major", "blocking"]
+          }
+        }
+      }
+    },
+    "rationale": { "type": "string", "maxLength": 4000 }
+  }
+}

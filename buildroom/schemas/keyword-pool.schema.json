@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/keyword-pool.schema.json",
+  "title": "Keyword pool",
+  "description": "SEO keyword bucket with volume, intent, difficulty per keyword.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "pool_id",
+    "topic",
+    "produced_by",
+    "produced_at",
+    "keywords"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "pool_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "topic": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "source": {
+      "type": "string",
+      "enum": ["api", "scrape", "operator", "manual", "estimate"]
+    },
+    "keywords": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["term", "intent"],
+        "additionalProperties": false,
+        "properties": {
+          "term": { "type": "string", "maxLength": 200 },
+          "intent": {
+            "type": "string",
+            "enum": ["informational", "transactional", "navigational", "commercial-investigation"]
+          },
+          "monthly_volume_estimate": { "type": "integer", "minimum": 0 },
+          "difficulty_estimate": { "type": "number", "minimum": 0, "maximum": 100 },
+          "serp_features": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["featured-snippet", "people-also-ask", "knowledge-panel", "image-pack", "video-pack", "local-pack", "shopping", "ai-overview"]
+            }
+          },
+          "notes": { "type": "string", "maxLength": 600 }
+        }
+      }
+    },
+    "notes": { "type": "string", "maxLength": 4000 }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/seo-recommendations.schema.json",
+  "title": "SEO recommendations for a draft",
+  "description": "Schema markup, internal-link suggestions, intent fit. Attached to a content track.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "rec_id",
+    "track_id",
+    "produced_by",
+    "produced_at",
+    "primary_intent"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "rec_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "track_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "primary_intent": {
+      "type": "string",
+      "enum": ["informational", "transactional", "navigational", "commercial-investigation"]
+    },
+    "primary_keyword": { "type": "string", "maxLength": 200 },
+    "secondary_keywords": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 200 },
+      "maxItems": 20
+    },
+    "schema_markup_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Article", "BlogPosting", "FAQPage", "HowTo", "Product", "Review", "Event", "VideoObject"]
+          },
+          "rationale": { "type": "string", "maxLength": 600 }
+        }
+      }
+    },
+    "internal_link_suggestions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["target_url", "anchor_text"],
+        "additionalProperties": false,
+        "properties": {
+          "target_url": { "type": "string", "format": "uri" },
+          "anchor_text": { "type": "string", "maxLength": 200 },
+          "reason": { "type": "string", "maxLength": 400 }
+        }
+      }
+    },
+    "competitor_overlap": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["domain"],
+        "additionalProperties": false,
+        "properties": {
+          "domain": { "type": "string" },
+          "overlapping_topics": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "notes": { "type": "string", "maxLength": 4000 }
+  }
+}

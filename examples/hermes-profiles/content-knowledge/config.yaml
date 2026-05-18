@@ -1,0 +1,44 @@
+# content-knowledge profile config.
+
+profile:
+  id: content-knowledge
+  display_name: Content Knowledge
+  vault_path: /opt/agent-data/content-vault
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+# Models
+models:
+  default:           ${HERMES_DEFAULT_MODEL:-nvidia/meta/llama-3.1-8b-instruct}
+  finding_extraction: ${HERMES_MODEL_RESEARCH:-nvidia/meta/llama-3.1-8b-instruct}
+  playbook_synthesis: ${HERMES_MODEL_SYNTHESIS:-opencode-go/qwen3.6-plus}
+
+# Schedule (informational; actual scheduling via systemd timers)
+schedule:
+  refresh_medium_hours: 6
+  refresh_x_hours: 4
+  refresh_linkedin_hours: 12
+  refresh_substack_hours: 24
+  refresh_seo_hours: 12
+
+# Per-platform constraints
+constraints:
+  max_runtime_seconds: 900
+  max_findings_per_refresh: 30
+  request_timeout_seconds: 60
+
+# Validation
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+# Delivery
+delivery:
+  discord_webhook_env: DISCORD_WEBHOOK_RESEARCH
+  emit_via:
+    - file
+
+# Logging
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

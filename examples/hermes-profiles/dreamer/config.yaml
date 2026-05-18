@@ -1,0 +1,71 @@
+# Dreamer profile config.
+
+profile:
+  id: dreamer
+  display_name: Dreamer
+  room_path: workspace/room
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+# Models per task. Walks are high-volume; intent elaboration is judgment-heavy.
+models:
+  default: ${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4}
+
+  # Per walk-mode (cheap models — lots of generation)
+  walk_drift:        ${HERMES_MODEL_WALKS:-openrouter/qwen/qwen-2.5-72b-instruct}
+  walk_continue:     ${HERMES_MODEL_WALKS:-openrouter/qwen/qwen-2.5-72b-instruct}
+  walk_tangent:      ${HERMES_MODEL_WALKS:-openrouter/qwen/qwen-2.5-72b-instruct}
+  walk_tend:         ${HERMES_MODEL_WALKS:-openrouter/qwen/qwen-2.5-72b-instruct}
+
+  # Strong model for shaping idea-contracts
+  intent_elaboration: ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+
+  # Strong model for the post-walk retrospective + fascinations/lessons updates
+  retrospect:        ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+  synthesis:         ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+
+# Schedule (informational; actual timers in cron/)
+schedule:
+  walk_interval_minutes: 90              # ~16 walks/day, varies by mode
+  digest_times: ["06:00", "12:00", "18:00"]
+  signal_filter_after_each_walk: true
+
+# Signal filter thresholds — must be met for the ready lane
+ready_thresholds:
+  min_score: 6
+  min_positive_walks: 3
+  min_signal_types: 2
+
+experiment_thresholds:
+  min_score: 3
+  min_positive_walks: 2
+  cooldown_hours: 24
+
+# Sprint lock — prevent flood of promotions
+sprint_lock:
+  enabled: true
+  max_concurrent_active: 1
+  cooldown_after_promotion_minutes: 60
+
+# Walk constraints
+constraints:
+  max_runtime_seconds: 300
+  max_walk_words: 1500
+  request_timeout_seconds: 60
+
+# Validation
+validation:
+  validate_idea_contracts: true
+  fail_on_invalid: true
+
+# Delivery
+delivery:
+  discord_webhook_env: DISCORD_WEBHOOK_DREAMER
+  emit_via:
+    - file
+    - discord
+
+# Logging
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

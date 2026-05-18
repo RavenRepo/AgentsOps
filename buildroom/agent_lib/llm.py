@@ -1,108 +1,118 @@
-"""Multi-provider LLM router for Goku agents."""
+"""OpenAI-compatible LLM client with multi-provider routing."""
+from __future__ import annotations
 
 import os
-import json
-from typing import Optional, List, Dict, Any
-import httpx
+import time
+from dataclasses import dataclass
+
+
+@dataclass
+class ProviderConfig:
+    name: str
+    base_url: str
+    api_key_env: str
+
+
+def _providers() -> dict[str, ProviderConfig]:
+    return {
+        "openrouter": ProviderConfig(
+            name="openrouter",
+            base_url=os.environ.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+            api_key_env=
+        ),
+        "opencode-zen": ProviderConfig(
+            name="opencode-zen",
+            base_url=os.environ.get("OPENCODE_ZEN_BASE_URL", "https://opencode.ai/zen/v1"),
+            api_key_env=
+        ),
+        "opencode-go": ProviderConfig(
+            name="opencode-go",
+            base_url=os.environ.get("OPENCODE_GO_BASE_URL", "https://opencode.ai/zen/go/v1"),
+            api_key_env="OPENCODE_GO_API_KEY",
+        ),
+        "nvidia": ProviderConfig(
+            name="nvidia",
+            base_url=os.environ.get("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+            api_key_env=
+        ),
+        "xai": ProviderConfig(
+            name="xai",
+            base_url=os.environ.get("XAI_BASE_URL", "https://api.x.ai/v1"),
+            api_key_env="XAI_API_KEY",
+        ),
+    }
+
 
 class LLMError(Exception):
-    """LLM provider error."""
-    pass
+    """Provider/network error context."""
 
-# Provider configuration
-PROVIDERS = {
-    "nvidia": {
-        "base_url": "https://integrate.api.nvidia.com/v1",
-        "key_env": "NVIDIA_API_KEY",
-    },
-    "opencode-zen": {
-        "base_url": "https://opencode.ai/zen/v1",
-        "key_env": "OPENCODE_API_KEY",
-    },
-    "opencode-go": {
-        "base_url": "https://opencode.ai/zen/go/v1",
-        "key_env": "OPENCODE_API_KEY",
-    },
-    "openrouter": {
-        "base_url": "https://openrouter.ai/api/v1",
-        "key_env": "OPENROUTER_API_KEY",
-    },
-}
 
-def is_provider_configured(model_id: str) -> bool:
-    """Check if provider for model_id has API key configured."""
-    provider, _ = model_id.split("/", 1)
-    if provider not in PROVIDERS:
-        return False
-    key_env = PROVIDERS[provider]["key_env"]
-    return bool(os.getenv(key_env))
+def parse_model_id(model_id: str) -> tuple[ProviderConfig, str]:
+    if "/" not in model_id:
+        raise LLMError(f"model id missing provider prefix: {model_id!r}")
+    provider, _, name = model_id.partition("/")
+    providers = _providers()
+    if provider not in providers:
+        raise LLMError(f"unknown provider {provider!r} in {model_id!r}; "
+                       f"known: {list(providers)}")
+    return providers[provider], name
+
+
+def get_client(provider: ProviderConfig):
+    try:
+        from openai import OpenAI
+    except ImportError as e:
+        raise LLMError("openai package not installed") from e
+    api_key = os.environ.get(provider.api_key_env)
+    if not api_key:
+        raise LLMError(
+            f"{provider.api_key_env} not set. Fill os.environ.get("GOKU_DATA_DIR", "/opt/agent-data")/secrets.env "
+            f"and run 'just apply-secrets'."
+        )
+    return OpenAI(api_key=api_key, base_url=provider.base_url)
+
 
 def call_model(
     model: str,
-    messages: List[Dict[str, str]],
-    temperature: float = 0.7,
+    messages: list[dict],
+    temperature: float = 0.2,
+    max_tokens: int | None = None,
     json_mode: bool = False,
-    **kwargs
+    timeout: float = 60.0,
+    max_retries: int = 2,
 ) -> str:
-    """
-    Call LLM model.
-    
-    Args:
-        model: Model ID (e.g., "nvidia/meta/llama-3.1-8b-instruct")
-        messages: List of {"role": "...", "content": "..."} dicts
-        temperature: Sampling temperature (0-1)
-        json_mode: Request JSON response
-        **kwargs: Additional params (max_tokens, etc.)
-    
-    Returns:
-        Model response text
-        
-    Raises:
-        LLMError: If provider not configured or request fails
-    """
-    # Parse model ID
-    if "/" not in model:
-        raise LLMError(f"Invalid model ID: {model}. Use provider/model format.")
-    
-    provider, model_name = model.split("/", 1)
-    
-    if provider not in PROVIDERS:
-        raise LLMError(f"Unknown provider: {provider}")
-    
-    provider_config = PROVIDERS[provider]
-    api_key = os.getenv(provider_config["key_env"])
-    if not api_key:
-        raise LLMError(f"API key not configured for {provider}. Set {provider_config['key_env']}")
-    
-    # Build request
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    
-    payload = {
+    """Call a chat completion. Returns content string."""
+    provider, model_name = parse_model_id(model)
+    client = get_client(provider)
+
+    kwargs: dict = {
         "model": model_name,
         "messages": messages,
         "temperature": temperature,
-        **kwargs,
+        "timeout": timeout,
     }
-    
+    if max_tokens is not None:
+        kwargs["max_tokens"] = max_tokens
     if json_mode:
-        payload["response_format"] = {"type": "json_object"}
-    
-    # Call API
+        kwargs["response_format"] = {"type": "json_object"}
+
+    last_err: Exception | None = None
+    for attempt in range(max_retries + 1):
+        try:
+            resp = client.chat.completions.create(**kwargs)
+            return resp.choices[0].message.content or ""
+        except Exception as e:
+            last_err = e
+            if attempt < max_retries:
+                time.sleep(1 + attempt * 2)
+                continue
+            raise LLMError(f"{provider.name}/{model_name} failed: {e}") from e
+    raise LLMError(f"{provider.name}/{model_name} failed: {last_err}")
+
+
+def is_provider_configured(model_id: str) -> bool:
     try:
-        with httpx.Client() as client:
-            response = client.post(
-                f"{provider_config['base_url']}/chat/completions",
-                headers=headers,
-                json=payload,
-                timeout=60.0,
-            )
-            response.raise_for_status()
-            result = response.json()
-            return result["choices"][0]["message"]["content"]
-    except httpx.HTTPError as e:
-        raise LLMError(f"Request failed: {e}")
-    except (KeyError, json.JSONDecodeError) as e:
-        raise LLMError(f"Invalid response: {e}")
+        provider, _ = parse_model_id(model_id)
+    except LLMError:
+        return False
+    return bool(os.environ.get(provider.api_key_env))

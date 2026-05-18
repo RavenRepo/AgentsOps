@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/analytics-snapshot.schema.json",
+  "title": "Analytics snapshot",
+  "description": "Engagement at a point in time for a posted piece. Append-only across snapshots.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "track_id",
+    "platform",
+    "post_url",
+    "captured_at",
+    "produced_by"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "snapshot_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "track_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "platform": {
+      "type": "string",
+      "enum": ["medium", "x", "linkedin", "substack"]
+    },
+    "post_url": { "type": "string", "format": "uri" },
+    "captured_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "source": {
+      "type": "string",
+      "enum": ["platform-api", "scrape", "operator-input", "estimate"]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "views":     { "type": "integer", "minimum": 0 },
+        "likes":     { "type": "integer", "minimum": 0 },
+        "shares":    { "type": "integer", "minimum": 0 },
+        "comments":  { "type": "integer", "minimum": 0 },
+        "saves":     { "type": "integer", "minimum": 0 },
+        "follows":   { "type": "integer", "minimum": 0 },
+        "click_through": { "type": "integer", "minimum": 0 },
+        "watch_time_seconds": { "type": "integer", "minimum": 0 },
+        "subscribers_added":  { "type": "integer", "minimum": 0 }
+      }
+    },
+    "notes": { "type": "string", "maxLength": 2000 }
+  }
+}

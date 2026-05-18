@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/product-plan.schema.json",
+  "title": "Product plan",
+  "description": "What Coder builds against. Bounded by allowed paths and protected surfaces.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "plan_id",
+    "contract_id",
+    "main_review_id",
+    "produced_by",
+    "produced_at",
+    "goal",
+    "allowed_paths",
+    "verification_commands",
+    "acceptance_checks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "plan_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "contract_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "main_review_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "goal": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 3000,
+      "description": "What this build must achieve, written for Coder"
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Paths (absolute or repo-relative) Coder may write to",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "planned_files": {
+      "type": "array",
+      "description": "Specific files Coder is expected to create/modify (subset of allowed_paths)",
+      "items": {
+        "type": "object",
+        "required": ["path", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": ["create", "modify", "delete", "rename"]
+          },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "non_goals": {
+      "type": "array",
+      "description": "Things this build is explicitly NOT doing",
+      "items": { "type": "string", "maxLength": 500 }
+    },
+    "protected_surfaces": {
+      "type": "array",
+      "description": "Inherited from main-review; paths Coder MUST NOT touch",
+      "items": { "type": "string" }
+    },
+    "verification_commands": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Commands that must pass for the build to be considered complete",
+      "items": {
+        "type": "object",
+        "required": ["command"],
+        "additionalProperties": false,
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "cwd": { "type": "string" },
+          "expected_exit_code": { "type": "integer", "default": 0 },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "acceptance_checks": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Human-readable acceptance criteria",
+      "items": { "type": "string", "minLength": 5 }
+    },
+    "risk_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "risk_band": { "$ref": "_common.schema.json#/$defs/risk-band" },
+        "blast_radius": {
+          "type": "string",
+          "enum": ["isolated", "module", "service", "cross-service", "system-wide"]
+        },
+        "rollback_strategy": { "type": "string" }
+      }
+    },
+    "estimated_effort": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "complexity": {
+          "type": "string",
+          "enum": ["trivial", "small", "medium", "large"]
+        },
+        "estimated_minutes": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/content-draft.schema.json",
+  "title": "Content draft meta",
+  "description": "Sidecar meta for a platform-specific draft (the prose lives in a .md file alongside).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "draft_id",
+    "track_id",
+    "platform",
+    "produced_by",
+    "produced_at",
+    "draft_path",
+    "humanized"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "draft_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "track_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "platform": {
+      "type": "string",
+      "enum": ["medium", "x", "linkedin", "substack"]
+    },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "model": { "type": "string" },
+    "draft_path": {
+      "type": "string",
+      "description": "Path to the markdown body, relative to track folder"
+    },
+    "title": { "type": "string", "maxLength": 300 },
+    "hook": { "type": "string", "maxLength": 600 },
+    "word_count": { "type": "integer", "minimum": 0 },
+    "humanized": {
+      "type": "boolean",
+      "description": "True if humanizer pass has been applied"
+    },
+    "humanizer_voice_path": { "type": "string" },
+    "applied_tactics": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 200 },
+      "maxItems": 20
+    },
+    "variant_index": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "If multiple variants drafted; default 0"
+    },
+    "notes": { "type": "string", "maxLength": 2000 }
+  }
+}

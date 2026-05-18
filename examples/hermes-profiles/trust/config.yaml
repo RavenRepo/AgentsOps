@@ -1,0 +1,49 @@
+# Trust profile config.
+
+profile:
+  id: trust
+  display_name: Trust
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+# Trust is mostly deterministic. The only LLM use is the optional summary
+# narrative that explains the state in operator-readable English.
+models:
+  default:    ${HERMES_DEFAULT_MODEL:-nvidia/meta/llama-3.1-8b-instruct}
+  narrative:  ${HERMES_MODEL_SYNTHESIS:-opencode-go/qwen3.6-plus}
+
+# Window for "recent" activity that contributes to trust state.
+window:
+  hours: 24
+  # If you want a strict window of the last N tracks regardless of time,
+  # set max_tracks. Otherwise the time-based window applies.
+  max_tracks: 50
+
+# Aggregate rules
+thresholds:
+  watch_after_drifts: 2          # >=2 drift deltas in window → at least watch
+  investigate_on_regression: true
+  investigate_on_blocking: true
+
+# Schedule (informational; actual scheduling via systemd timer)
+schedule:
+  sweep_times: ["02:45", "08:45", "14:45", "20:45"]   # 4× daily, slightly offset from qa-verify
+
+# Validation
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+# Delivery
+delivery:
+  discord_webhook_env: DISCORD_WEBHOOK_OPERATOR
+  emit_via:
+    - file
+  # Discord delivery happens only on STATE TRANSITIONS, not every sweep.
+  emit_on:
+    - state_transition
+
+# Logging
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

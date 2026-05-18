@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/research-input.schema.json",
+  "title": "Research input packet",
+  "description": "Output of a research-agent run. Becomes evidence consumable by the dreamer.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "produced_by",
+    "produced_at",
+    "topics",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "run_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "run_mode": {
+      "type": "string",
+      "enum": ["bootstrap", "refresh", "daily-summary", "subc-brief", "midday-focus", "manual"]
+    },
+    "topics": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Topics covered by this research run",
+      "items": {
+        "type": "object",
+        "required": ["topic", "findings_count"],
+        "additionalProperties": false,
+        "properties": {
+          "topic": { "$ref": "_common.schema.json#/$defs/slug" },
+          "findings_count": { "type": "integer", "minimum": 0 },
+          "claims_count": { "type": "integer", "minimum": 0 },
+          "verification_pending": { "type": "integer", "minimum": 0 },
+          "dossier_path": { "type": "string" }
+        }
+      }
+    },
+    "new_findings": {
+      "type": "array",
+      "description": "Notable new findings since last run",
+      "items": {
+        "type": "object",
+        "required": ["finding_id", "topic", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "finding_id": { "type": "string" },
+          "topic": { "$ref": "_common.schema.json#/$defs/slug" },
+          "summary": { "type": "string", "maxLength": 1000 },
+          "source": { "$ref": "_common.schema.json#/$defs/evidence-ref" },
+          "strength": {
+            "type": "string",
+            "enum": ["weak", "moderate", "strong", "verified"]
+          }
+        }
+      }
+    },
+    "new_claims": {
+      "type": "array",
+      "description": "Claims extracted from findings (not yet verified knowledge)",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "statement"],
+        "additionalProperties": false,
+        "properties": {
+          "claim_id": { "type": "string" },
+          "statement": { "type": "string", "maxLength": 2000 },
+          "supporting_evidence": {
+            "type": "array",
+            "items": { "$ref": "_common.schema.json#/$defs/evidence-ref" }
+          },
+          "topics": {
+            "type": "array",
+            "items": { "$ref": "_common.schema.json#/$defs/slug" }
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": ["unverified", "in-review", "verified", "disputed"]
+          }
+        }
+      }
+    },
+    "source_quality": {
+      "type": "object",
+      "description": "Mix of source types observed in this run",
+      "additionalProperties": false,
+      "properties": {
+        "primary_count": { "type": "integer", "minimum": 0 },
+        "secondary_count": { "type": "integer", "minimum": 0 },
+        "social_count": { "type": "integer", "minimum": 0 },
+        "degraded_collectors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "balance_warning": { "type": "string" }
+      }
+    },
+    "verification_queue": {
+      "type": "array",
+      "description": "Claims that need stronger evidence before promotion",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "claim_id": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "handoffs": {
+      "type": "object",
+      "description": "Implications routed to other lanes",
+      "additionalProperties": false,
+      "properties": {
+        "to_dreamer": { "type": "array", "items": { "type": "string" } },
+        "to_main": { "type": "array", "items": { "type": "string" } },
+        "to_content": { "type": "array", "items": { "type": "string" } },
+        "to_watch": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "maxLength": 5000,
+      "description": "Operator-facing summary of what changed in this run"
+    }
+  }
+}

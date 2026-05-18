@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/idea-contract.schema.json",
+  "title": "Idea contract",
+  "description": "Dreamer's candidate idea, shaped from accumulated signals. Not approved work.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "contract_id",
+    "slug",
+    "produced_by",
+    "produced_at",
+    "title",
+    "what_should_exist",
+    "evidence",
+    "signal_score",
+    "signal_types",
+    "card_state"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "contract_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "slug": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "dreamer_session": { "type": "string" },
+    "walk_mode": {
+      "type": "string",
+      "enum": ["drift-from-research", "continue-project", "pure-tangent", "tend-the-room"]
+    },
+    "title": { "type": "string", "minLength": 3, "maxLength": 200 },
+    "what_should_exist": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 2000,
+      "description": "One paragraph describing what the artifact would be"
+    },
+    "who_benefits": { "type": "string", "maxLength": 1000 },
+    "why_now": { "type": "string", "maxLength": 2000 },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "description": "References to research vault items that support this idea",
+      "items": { "$ref": "_common.schema.json#/$defs/evidence-ref" }
+    },
+    "out_of_scope": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 500 }
+    },
+    "where_it_might_live": {
+      "type": "object",
+      "description": "Hints about where the artifact would be implemented",
+      "additionalProperties": false,
+      "properties": {
+        "filesystem_path": { "type": "string" },
+        "repository": { "type": "string" },
+        "service": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    },
+    "how_verified": {
+      "type": "array",
+      "description": "Acceptance checks the build will need to satisfy",
+      "items": { "type": "string", "maxLength": 500 }
+    },
+    "signal_score": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Sum of weighted signal events for this idea family"
+    },
+    "signal_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "_common.schema.json#/$defs/signal-type" }
+    },
+    "positive_walks": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How many walks have surfaced this idea positively"
+    },
+    "returns_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "How many times the idea has come back after going cold"
+    },
+    "experiment_lane": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an experiment (small, file-oriented, lower bar) vs. ready"
+    },
+    "card_state": { "$ref": "_common.schema.json#/$defs/card-state" },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["reason"],
+        "additionalProperties": false,
+        "properties": {
+          "reason": { "type": "string" },
+          "from_agent": { "$ref": "_common.schema.json#/$defs/agent-id" }
+        }
+      }
+    }
+  }
+}

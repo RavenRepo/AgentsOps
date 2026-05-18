@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/_common.schema.json",
+  "title": "Common buildroom types",
+  "description": "Shared type definitions used across the buildroom contract chain.",
+  "$defs": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp, e.g. 2026-05-17T10:23:14Z"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,127}$",
+      "description": "Lowercase, hyphen-separated identifier"
+    },
+    "agent-id": {
+      "type": "string",
+      "enum": [
+        "research-agent",
+        "dreamer",
+        "main",
+        "coder",
+        "qa",
+        "trust",
+        "retention",
+        "content",
+        "content-knowledge",
+        "content-studio",
+        "content-poster",
+        "content-analytics",
+        "seo",
+        "operator",
+        "human"
+      ],
+      "description": "Identifier for the agent or actor producing this artifact"
+    },
+    "evidence-ref": {
+      "type": "object",
+      "description": "Reference to a piece of evidence stored in the research vault",
+      "required": ["source_id", "source_type"],
+      "additionalProperties": false,
+      "properties": {
+        "source_id": { "type": "string", "minLength": 1 },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "finding", "claim", "source", "wiki", "dossier",
+            "external-url", "internal-note",
+            "rss", "github-release", "github-repo", "github-issue", "github-pr",
+            "blog", "x", "linkedin", "substack", "medium",
+            "sitemap", "official-blog", "documentation"
+          ]
+        },
+        "url": { "type": "string", "format": "uri" },
+        "excerpt": { "type": "string", "maxLength": 4000 },
+        "captured_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "risk-band": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "critical"]
+    },
+    "trust-state": {
+      "type": "string",
+      "enum": ["clean", "watch", "investigate"]
+    },
+    "card-state": {
+      "type": "string",
+      "description": "Lifecycle state of an idea/build card",
+      "enum": [
+        "watching",
+        "ready",
+        "queued",
+        "active",
+        "built",
+        "ghost",
+        "broken",
+        "reopened",
+        "critic_rejected",
+        "pending_revision"
+      ]
+    },
+    "signal-type": {
+      "type": "string",
+      "enum": ["commit", "friction", "excitement", "reuse", "mention", "return", "cooling"]
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["approved", "rejected", "needs_revision", "blocked", "deferred"]
+    },
+    "verification-result": {
+      "type": "string",
+      "enum": ["pass", "fail", "partial", "skipped"]
+    },
+    "delta-state": {
+      "type": "string",
+      "description": "Outcome of comparing coder vs QA verification",
+      "enum": ["confirmed", "drift", "regression", "missing_evidence", "disputed"]
+    },
+    "retention-recommendation": {
+      "type": "string",
+      "enum": ["keep", "improve", "park", "prune"]
+    },
+    "schema-version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Increment when breaking changes are introduced"
+    }
+  }
+}

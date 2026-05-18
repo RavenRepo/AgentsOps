@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/verification.schema.json",
+  "title": "Verification (coder receipt)",
+  "description": "Coder's own receipt of what was done. NOT trusted as-is; QA writes an independent receipt.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "verification_id",
+    "build_id",
+    "produced_by",
+    "produced_at",
+    "result",
+    "files_changed",
+    "evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "verification_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "build_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "result": { "$ref": "_common.schema.json#/$defs/verification-result" },
+    "summary": { "type": "string", "maxLength": 4000 },
+    "files_changed": {
+      "type": "array",
+      "description": "Every file Coder created, modified, or deleted",
+      "items": {
+        "type": "object",
+        "required": ["path", "action", "content_sha256"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": ["created", "modified", "deleted", "renamed"]
+          },
+          "content_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$|^DELETED$" },
+          "size_bytes": { "type": "integer", "minimum": 0 },
+          "diff_summary": { "type": "string" }
+        }
+      }
+    },
+    "commands_run": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "exit_code"],
+        "additionalProperties": false,
+        "properties": {
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "stdout_excerpt": { "type": "string", "maxLength": 4000 },
+          "stderr_excerpt": { "type": "string", "maxLength": 4000 },
+          "duration_seconds": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Receipts proving the build did what it claims",
+      "items": {
+        "type": "object",
+        "required": ["type", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["file", "log", "test-output", "screenshot", "diff", "json", "metric"]
+          },
+          "path": { "type": "string" },
+          "content_sha256": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "tests_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "acceptance_checks_results": {
+      "type": "array",
+      "description": "Per-check outcome from product-plan acceptance_checks",
+      "items": {
+        "type": "object",
+        "required": ["check", "passed"],
+        "additionalProperties": false,
+        "properties": {
+          "check": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "notes": { "type": "string" }
+        }
+      }
+    },
+    "deviations_from_plan": {
+      "type": "array",
+      "description": "Anything Coder did that differs from product-plan or build-plan; must be flagged honestly",
+      "items": {
+        "type": "object",
+        "required": ["deviation", "justification"],
+        "additionalProperties": false,
+        "properties": {
+          "deviation": { "type": "string" },
+          "justification": { "type": "string" },
+          "files_affected": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

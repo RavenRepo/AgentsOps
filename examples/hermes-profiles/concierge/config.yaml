@@ -1,0 +1,44 @@
+# Concierge profile config.
+
+profile:
+  id: concierge
+  display_name: Concierge
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+  content_vault_path: /opt/agent-data/content-vault
+
+# Concierge is reasoning-heavy: it must understand intent, decide route,
+# read state, formulate concise replies. Use the synthesis model.
+models:
+  default:    ${HERMES_DEFAULT_MODEL:-opencode-go/qwen3.6-plus}
+  reasoning:  ${HERMES_MODEL_SYNTHESIS:-opencode-go/qwen3.6-plus}
+
+# Telegram channel
+telegram:
+  bot_token_env: TELEGRAM_BOT_TOKEN_CONCIERGE
+  allowed_chat_ids_env: TELEGRAM_ALLOWED_CHAT_IDS
+  long_poll_timeout_seconds: 25
+  max_message_length: 4000   # Telegram's hard cap is 4096; leave headroom
+
+# Concierge's runtime behavior
+runtime:
+  reply_max_chars: 3500
+  history_max_turns: 8           # how much chat history to include in LLM context
+  context_max_chars: 12000       # safety cap on system context blob
+  request_timeout_seconds: 90
+
+# Notifier (Slice 3)
+notifier:
+  poll_interval_seconds: 300     # 5 min — matches cockpit cadence
+  voice_md_nag_after_days: 1     # remind once per day if voice.md is still empty
+  rate_limit_per_event_kind_minutes: 30   # don't repeat same kind of alert within this window
+
+# Validation
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+# Logging
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

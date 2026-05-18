@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/post-receipt.schema.json",
+  "title": "Post receipt",
+  "description": "Proof of post: URL, platform ID, timestamp, account.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "track_id",
+    "platform",
+    "produced_by",
+    "produced_at",
+    "posting_mode",
+    "post_url"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "receipt_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "track_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "platform": {
+      "type": "string",
+      "enum": ["medium", "x", "linkedin", "substack"]
+    },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "posting_mode": {
+      "type": "string",
+      "enum": ["api", "browser-automation", "operator-paste"]
+    },
+    "post_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Public URL of the posted content"
+    },
+    "post_id": {
+      "type": "string",
+      "description": "Platform-native post id (tweet id, medium story id, etc.)"
+    },
+    "account_handle": {
+      "type": "string",
+      "description": "Posted from this account (@-handle or display name)"
+    },
+    "draft_id": {
+      "type": "string",
+      "description": "draft_id of the variant that was posted"
+    },
+    "operator_confirmed_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "notes": { "type": "string", "maxLength": 2000 }
+  }
+}

@@ -1,0 +1,77 @@
+# Research agent profile config.
+# Loaded by scripts in this profile via lib.config.load_profile_config().
+# Models reference env vars from /opt/agent-data/secrets.env (applied to .env via apply_secrets.py).
+
+profile:
+  id: research-agent
+  display_name: Research Agent
+  vault_path: workspace/research-vault
+  buildroom_path: /opt/agent-data/buildroom
+
+# Model selection per mode. Override via secrets.env or here.
+# Prefer cheaper/faster models for high-volume routine work,
+# stronger models for synthesis and judgment.
+models:
+  default: ${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4}
+
+  # Per-mode overrides
+  refresh:        ${HERMES_MODEL_RESEARCH:-openrouter/qwen/qwen-2.5-72b-instruct}
+  daily_summary:  ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+  subc_brief:     ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+  midday_focus:   ${HERMES_MODEL_RESEARCH:-openrouter/qwen/qwen-2.5-72b-instruct}
+
+  # Specific sub-tasks within refresh
+  finding_extraction: ${HERMES_MODEL_RESEARCH:-openrouter/qwen/qwen-2.5-72b-instruct}
+  claim_synthesis:    ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+  source_scoring:     ${HERMES_MODEL_RESEARCH:-openrouter/qwen/qwen-2.5-72b-instruct}
+
+# Provider configs. The Python lib uses OpenAI-compatible HTTP, which all of these speak.
+providers:
+  openrouter:
+    base_url: https://openrouter.ai/api/v1
+    api_key_env: OPENROUTER_API_KEY
+  opencode-zen:
+    base_url: ${OPENCODE_ZEN_BASE_URL:-https://opencode.ai/zen/v1}
+    api_key_env: OPENCODE_ZEN_API_KEY
+  nvidia:
+    base_url: ${NVIDIA_BASE_URL:-https://integrate.api.nvidia.com/v1}
+    api_key_env: NVIDIA_API_KEY
+
+# Schedule (informational; actual scheduling is via systemd timers in cron/)
+schedule:
+  refresh_interval_minutes: 360       # every 6 hours
+  daily_summary_times: ["06:00", "12:00", "18:00"]
+  subc_brief_times: ["09:00"]
+  midday_focus_times: ["13:00"]
+  backup_times: ["03:00"]
+
+# Run constraints
+constraints:
+  max_runtime_seconds: 1800           # 30 min hard cap for a single refresh
+  max_findings_per_run: 100
+  max_claims_per_run: 30
+  request_timeout_seconds: 60
+  max_retries: 2
+
+# Source plan reference (the plan itself lives at vault/context/source-plan.md)
+source_plan:
+  file: workspace/research-vault/context/source-plan.md
+  enforce_bounds: true                # refuse to fetch from sources not on the plan
+
+# Output validation. If false, runs may produce invalid artifacts.
+validation:
+  validate_run_artifacts: true        # validate against buildroom schemas
+  fail_on_invalid: true               # exit non-zero if artifacts don't validate
+
+# Human delivery (Discord webhooks if configured; otherwise files only)
+delivery:
+  discord_webhook_env: DISCORD_WEBHOOK_RESEARCH
+  emit_via:
+    - file                             # always write to operator-brief.md
+    - discord                          # post if webhook is set
+
+# Logging
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs
+  per_run_log: true                    # write a separate log file per run

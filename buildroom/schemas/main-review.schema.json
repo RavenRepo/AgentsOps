@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/main-review.schema.json",
+  "title": "Main review (approval gate)",
+  "description": "Main agent's approval decision. Only approved contracts proceed to product plan.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "review_id",
+    "contract_id",
+    "reviewed_by",
+    "reviewed_at",
+    "decision",
+    "risk_band",
+    "risk_score"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "review_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "contract_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "intent_review_id": {
+      "$ref": "_common.schema.json#/$defs/slug",
+      "description": "Reference to the intent review that gated this contract"
+    },
+    "reviewed_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "reviewed_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "decision": {
+      "type": "string",
+      "enum": ["approved_for_coder", "blocked", "revisions_requested", "deferred"]
+    },
+    "risk_band": { "$ref": "_common.schema.json#/$defs/risk-band" },
+    "risk_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Numeric risk: 0=trivial, 100=catastrophic"
+    },
+    "reasoning": { "type": "string", "maxLength": 4000 },
+    "block_reason": {
+      "type": ["string", "null"],
+      "maxLength": 2000
+    },
+    "auto_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this approval was auto-applied via low-risk fast-path"
+    },
+    "force_approved": {
+      "type": "boolean",
+      "default": false,
+      "description": "Operator override of risk threshold; requires audit trail"
+    },
+    "force_approval_audit": {
+      "type": "object",
+      "description": "Required when force_approved is true",
+      "additionalProperties": false,
+      "properties": {
+        "operator": { "type": "string" },
+        "justification": { "type": "string", "minLength": 20 },
+        "ledger_entry_id": { "type": "string" }
+      }
+    },
+    "conditions": {
+      "type": "array",
+      "description": "Conditions Coder must satisfy that aren't in the product plan yet",
+      "items": { "type": "string", "maxLength": 500 }
+    },
+    "protected_surfaces": {
+      "type": "array",
+      "description": "Paths/components Coder MUST NOT touch on this build",
+      "items": { "type": "string" }
+    }
+  }
+}

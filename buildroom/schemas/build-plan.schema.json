@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/build-plan.schema.json",
+  "title": "Build plan",
+  "description": "Coder's expansion of the product plan into an executable packet.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "build_id",
+    "plan_id",
+    "produced_by",
+    "produced_at",
+    "files_to_create",
+    "files_to_modify",
+    "commands_to_run"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "build_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "plan_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "started_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "coder_runtime": {
+      "type": "object",
+      "description": "Which engine actually executes the build",
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": ["opencode-cli", "hermes-native", "manual", "subagent", "podman-sandbox"]
+        },
+        "model": { "type": "string" },
+        "container_image": { "type": "string" },
+        "workspace_isolation": {
+          "type": "string",
+          "enum": ["none", "git-worktree", "rootless-podman", "ssh-host"]
+        }
+      }
+    },
+    "files_to_create": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "files_to_modify": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "purpose": { "type": "string" }
+        }
+      }
+    },
+    "files_to_delete": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "commands_to_run": {
+      "type": "array",
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "required": ["command"],
+        "additionalProperties": false,
+        "properties": {
+          "command": { "type": "string" },
+          "cwd": { "type": "string" },
+          "purpose": { "type": "string" },
+          "must_succeed": { "type": "boolean", "default": true }
+        }
+      }
+    },
+    "expected_outputs": {
+      "type": "array",
+      "description": "Artifacts that should exist after the build",
+      "items": {
+        "type": "object",
+        "required": ["path", "type"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["file", "directory", "binary", "log", "json", "report"]
+          },
+          "min_size_bytes": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "estimated_runtime_seconds": { "type": "integer", "minimum": 0 },
+    "card_state": { "$ref": "_common.schema.json#/$defs/card-state" }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/verification-delta.schema.json",
+  "title": "Verification delta",
+  "description": "Comparison between coder's and QA's verification receipts. The truth lives in the agreement.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "delta_id",
+    "build_id",
+    "coder_verification_id",
+    "qa_verification_id",
+    "produced_at",
+    "agreement_state",
+    "delta_state"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "delta_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "build_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "coder_verification_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "qa_verification_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "agreement_state": {
+      "type": "string",
+      "enum": ["full_agreement", "partial_agreement", "disagreement", "qa_caught_drift"]
+    },
+    "delta_state": { "$ref": "_common.schema.json#/$defs/delta-state" },
+    "files_match": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "all_hashes_match": { "type": "boolean" },
+        "mismatched_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path"],
+            "additionalProperties": false,
+            "properties": {
+              "path": { "type": "string" },
+              "coder_hash": { "type": "string" },
+              "qa_hash": { "type": "string" },
+              "explanation": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "acceptance_check_disagreements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["check", "coder_passed", "qa_passed"],
+        "additionalProperties": false,
+        "properties": {
+          "check": { "type": "string" },
+          "coder_passed": { "type": "boolean" },
+          "qa_passed": { "type": "boolean" },
+          "resolution": {
+            "type": "string",
+            "enum": ["qa_correct", "coder_correct", "ambiguous", "needs_human"]
+          }
+        }
+      }
+    },
+    "qa_concerns_unaddressed": {
+      "type": "array",
+      "description": "QA-raised concerns that coder did not anticipate or address",
+      "items": {
+        "type": "object",
+        "required": ["concern", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "concern": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "minor", "major", "blocking"]
+          }
+        }
+      }
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": [
+        "trust_and_proceed",
+        "minor_revisions",
+        "reopen_for_coder",
+        "escalate_to_main",
+        "escalate_to_human",
+        "mark_as_broken"
+      ]
+    },
+    "trust_impact": {
+      "type": "object",
+      "description": "How this delta affects ongoing trust state for the room",
+      "additionalProperties": false,
+      "properties": {
+        "score_delta": { "type": "number" },
+        "evidence_for": {
+          "type": "string",
+          "enum": ["clean", "watch", "investigate"]
+        }
+      }
+    }
+  }
+}

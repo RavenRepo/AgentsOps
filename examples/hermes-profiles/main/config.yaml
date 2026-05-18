@@ -1,0 +1,42 @@
+profile:
+  id: main
+  display_name: Main (approval gate)
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+models:
+  default: ${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4}
+  review:        ${HERMES_MODEL_REVIEW:-openrouter/anthropic/claude-opus-4.6}
+  product_plan:  ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+
+# Auto-approve thresholds (anything tighter requires force_approval)
+auto_approve:
+  enabled: true
+  max_risk_band: low
+  max_risk_score: 15
+  min_walks_required: 3
+
+# Risk policy
+risk:
+  high_risk_floors:
+    - "/opt/agent-data/secrets.env"
+    - "/opt/agent-data/state/approval-ledger.jsonl"
+    - "/opt/agent-data/buildroom/schemas/"
+    - "/etc/"
+    - "/var/lib/agents/.local/"
+  always_protected:
+    - "/opt/agent-data/secrets.env"
+    - "/opt/agent-data/state/approval-ledger.jsonl"
+
+constraints:
+  max_runtime_seconds: 180
+  request_timeout_seconds: 90
+  max_retries: 2
+
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

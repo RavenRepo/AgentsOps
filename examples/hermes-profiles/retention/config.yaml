@@ -1,0 +1,39 @@
+profile:
+  id: retention
+  display_name: Retention (keep / improve / park / prune)
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+models:
+  default:    ${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4}
+  reasoning:  ${HERMES_MODEL_RESEARCH:-openrouter/qwen/qwen-2.5-72b-instruct}
+
+# Retention thresholds (days)
+windows:
+  keep_if_recent_days: 30               # built within this -> keep automatically
+  consider_park_days: 60                # no mentions in this -> consider park
+  consider_prune_days: 90               # no mentions + no deps -> consider prune
+
+# Mention sources scanned for "is this still alive?"
+mention_sources:
+  - /opt/agent-data/hermes/workspace/profiles/dreamer/workspace/room/walks
+  - /opt/agent-data/hermes/workspace/profiles/research/workspace/research-vault/dossiers
+  - /opt/agent-data/state/events.jsonl
+
+constraints:
+  max_runtime_seconds: 600
+  request_timeout_seconds: 60
+
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+# Operator confirmation required for prune actions
+prune_policy:
+  require_operator_confirmation: true
+  audit_to_ledger: true                 # all prune confirmations logged
+  ledger_path: /opt/agent-data/state/approval-ledger.jsonl
+
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

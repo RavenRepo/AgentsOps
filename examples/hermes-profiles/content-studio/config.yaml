@@ -1,0 +1,50 @@
+# content-studio profile config.
+
+profile:
+  id: content-studio
+  display_name: Content Studio
+  vault_path: /opt/agent-data/content-vault
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+# Models — drafting and humanizing benefit from a strong synthesis model.
+# Hard rule: only the X drafter touches Grok / xAI. Every other path uses
+# opencode-go / nvidia. See SOUL.md.
+models:
+  default:    ${HERMES_DEFAULT_MODEL:-opencode-go/qwen3.6-plus}
+  drafter:    ${HERMES_MODEL_SYNTHESIS:-opencode-go/qwen3.6-plus}
+  x_drafter:  ${HERMES_MODEL_X_DRAFTER:-nvidia/nemotron-mini-4b-instruct}
+  humanizer:  ${HERMES_MODEL_SYNTHESIS:-opencode-go/qwen3.6-plus}
+  editor:     ${HERMES_MODEL_REVIEW:-opencode-go/qwen3.6-plus}
+
+# Per-platform shape hints (used by the drafter to constrain length etc.)
+platform_defaults:
+  medium:
+    word_count: [1200, 2200]
+    hook_lines: 2
+  x:
+    thread_tweets: [4, 9]
+    chars_per_tweet: 270
+  linkedin:
+    word_count: [800, 1300]
+    hook_lines: 1
+  substack:
+    word_count: [1500, 3500]
+    hook_lines: 3
+
+constraints:
+  max_runtime_seconds: 900
+  request_timeout_seconds: 120
+
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+delivery:
+  discord_webhook_env: DISCORD_WEBHOOK_OPERATOR
+  emit_via:
+    - file
+
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

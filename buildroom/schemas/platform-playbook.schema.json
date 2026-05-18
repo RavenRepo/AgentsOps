@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/platform-playbook.schema.json",
+  "title": "Platform playbook (structured part)",
+  "description": "Per-platform structured playbook (algorithm tactics, format, do/don't). Companion JSON to <platform>-playbook.md.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "platform",
+    "produced_at",
+    "produced_by",
+    "version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "platform": {
+      "type": "string",
+      "enum": ["medium", "x", "linkedin", "substack", "seo"]
+    },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Bump when tactics meaningfully change"
+    },
+    "summary": { "type": "string", "maxLength": 2000 },
+    "tactics_rewarded": {
+      "type": "array",
+      "description": "Things the algorithm/audience rewards",
+      "items": {
+        "type": "object",
+        "required": ["tactic"],
+        "additionalProperties": false,
+        "properties": {
+          "tactic": { "type": "string", "maxLength": 400 },
+          "evidence_refs": { "type": "array", "items": { "type": "string" } },
+          "confidence": {
+            "type": "string",
+            "enum": ["weak", "moderate", "strong"]
+          }
+        }
+      }
+    },
+    "tactics_avoided": {
+      "type": "array",
+      "description": "Things to NOT do",
+      "items": {
+        "type": "object",
+        "required": ["tactic"],
+        "additionalProperties": false,
+        "properties": {
+          "tactic": { "type": "string", "maxLength": 400 },
+          "reason": { "type": "string", "maxLength": 400 }
+        }
+      }
+    },
+    "format_hints": {
+      "type": "object",
+      "description": "Per-platform shape constraints (length, hook, structure)",
+      "additionalProperties": true
+    },
+    "rate_limits": {
+      "type": "object",
+      "description": "Posting cadence guardrails",
+      "additionalProperties": false,
+      "properties": {
+        "max_per_day": { "type": "integer", "minimum": 0 },
+        "max_per_week": { "type": "integer", "minimum": 0 },
+        "min_hours_between": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "last_algo_update_seen": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "notes": { "type": "string", "maxLength": 4000 }
+  }
+}

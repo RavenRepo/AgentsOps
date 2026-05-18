@@ -1,0 +1,39 @@
+profile:
+  id: coder
+  display_name: Coder
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+# Coder backend selection
+runtime:
+  default_backend: opencode-cli           # opencode-cli | hermes-native | manual
+  workspace_isolation: git-worktree       # none | git-worktree | rootless-podman | ssh-host
+  workspace_root: /opt/agent-data/state/tracks      # work/ subdir per track
+
+# Models (used when backend = hermes-native, or for prompt building)
+models:
+  default:        ${CODER_DEFAULT_MODEL:-opencode-zen/anthropic/claude-sonnet-4}
+  build_plan:     ${HERMES_MODEL_SYNTHESIS:-openrouter/anthropic/claude-sonnet-4}
+  hermes_native:  ${CODER_DEFAULT_MODEL:-opencode-zen/anthropic/claude-sonnet-4}
+
+# OpenCode CLI integration
+opencode:
+  binary: opencode                        # on PATH after npm install -g
+  default_model: ${CODER_DEFAULT_MODEL:-opencode-zen/anthropic/claude-sonnet-4}
+  api_key_envs:
+    - OPENCODE_ZEN_API_KEY
+    - OPENCODE_GO_API_KEY
+  command_timeout_seconds: 1800           # 30 min hard cap
+
+constraints:
+  max_runtime_seconds: 1800
+  max_files_per_build: 50
+  max_diff_lines_per_file: 2000
+
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

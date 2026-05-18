@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/content-track.schema.json",
+  "title": "Content track manifest",
+  "description": "One folder per content track in content-vault/tracks/<slug>/. Manifest of intent + targets + status.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "track_id",
+    "produced_by",
+    "produced_at",
+    "topic",
+    "platforms",
+    "seed_source",
+    "status"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "track_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "topic": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "What this content is about, in one line"
+    },
+    "intent": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Why this is worth publishing"
+    },
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Which platforms to draft for",
+      "items": {
+        "type": "string",
+        "enum": ["medium", "x", "linkedin", "substack"]
+      }
+    },
+    "seed_source": {
+      "type": "string",
+      "enum": ["manual", "track-derived", "dreamer-derived", "operator"],
+      "description": "Where the seed came from"
+    },
+    "seed_ref": {
+      "type": "string",
+      "description": "Optional ref back to source: track slug, walk id, or seed file"
+    },
+    "voice_baseline": {
+      "type": "string",
+      "description": "Path to voice.md used (default: content-vault/humanizer/voice.md)"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 60 },
+      "maxItems": 12
+    },
+    "status": {
+      "type": "string",
+      "enum": ["seeded", "drafting", "humanizing", "editing", "ready", "approved", "posted", "abandoned"]
+    },
+    "operator_approved_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "notes": { "type": "string", "maxLength": 4000 }
+  }
+}

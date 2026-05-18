@@ -1,0 +1,28 @@
+profile:
+  id: qa
+  display_name: QA (independent verifier)
+  buildroom_path: /opt/agent-data/buildroom
+  state_path: /opt/agent-data/state
+
+models:
+  default:    ${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4}
+  reasoning:  ${HERMES_MODEL_REVIEW:-openrouter/anthropic/claude-opus-4.6}
+
+# Independence settings
+independence:
+  rerun_commands: true                  # always re-run, never paste coder's output
+  rehash_files: true                    # always recompute sha256
+  fresh_shell: true                     # exec in subprocess.run, not in-process
+  shell_timeout_seconds: 600
+
+constraints:
+  max_runtime_seconds: 900
+  request_timeout_seconds: 90
+
+validation:
+  validate_artifacts: true
+  fail_on_invalid: true
+
+logging:
+  level: INFO
+  log_dir: /opt/agent-data/hermes/logs

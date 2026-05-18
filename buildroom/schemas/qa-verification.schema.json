@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/qa-verification.schema.json",
+  "title": "QA verification (independent receipt)",
+  "description": "QA agent's own verification receipt. Must NOT be a copy of coder's verification.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "qa_verification_id",
+    "build_id",
+    "coder_verification_id",
+    "produced_by",
+    "produced_at",
+    "result",
+    "independent_evidence"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "qa_verification_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "build_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "coder_verification_id": {
+      "$ref": "_common.schema.json#/$defs/slug",
+      "description": "ID of coder verification being reviewed"
+    },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "result": { "$ref": "_common.schema.json#/$defs/verification-result" },
+    "summary": { "type": "string", "maxLength": 4000 },
+    "files_inspected": {
+      "type": "array",
+      "description": "Files QA actually opened and read, with their hashes",
+      "items": {
+        "type": "object",
+        "required": ["path", "content_sha256"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string" },
+          "content_sha256": { "type": "string" },
+          "matches_coder_claim": { "type": "boolean" }
+        }
+      }
+    },
+    "independent_commands_run": {
+      "type": "array",
+      "description": "Commands QA ran itself, separate from coder's runs",
+      "items": {
+        "type": "object",
+        "required": ["command", "exit_code"],
+        "additionalProperties": false,
+        "properties": {
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "stdout_excerpt": { "type": "string", "maxLength": 4000 },
+          "stderr_excerpt": { "type": "string", "maxLength": 4000 }
+        }
+      }
+    },
+    "independent_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Receipts QA generated from its own runs, not copied from coder",
+      "items": {
+        "type": "object",
+        "required": ["type", "path"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["file", "log", "test-output", "screenshot", "diff", "json", "metric"]
+          },
+          "path": { "type": "string" },
+          "content_sha256": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "acceptance_checks_results": {
+      "type": "array",
+      "description": "QA's independent assessment of each acceptance_check from product-plan",
+      "items": {
+        "type": "object",
+        "required": ["check", "passed"],
+        "additionalProperties": false,
+        "properties": {
+          "check": { "type": "string" },
+          "passed": { "type": "boolean" },
+          "qa_notes": { "type": "string" },
+          "agrees_with_coder": { "type": "boolean" }
+        }
+      }
+    },
+    "concerns_raised": {
+      "type": "array",
+      "description": "Things QA flags that coder didn't mention or downplayed",
+      "items": {
+        "type": "object",
+        "required": ["concern", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "concern": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "minor", "major", "blocking"]
+          },
+          "evidence_path": { "type": "string" }
+        }
+      }
+    }
+  }
+}

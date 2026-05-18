@@ -1,30 +1,18 @@
-[build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "goku-buildroom"
+name = "agent_lib"
 version = "0.1.0"
-description = "Shared utilities for Goku agent system"
-authors = [{name = "Goku Contributors", email = "contributors@example.com"}]
-license = {text = "MIT"}
-requires-python = ">=3.9"
+description = "Shared library for Goku VPS agent profiles"
+requires-python = ">=3.11"
 dependencies = [
+    "openai>=1.0",
     "pyyaml>=6.0",
     "jsonschema>=4.0",
-    "httpx>=0.24.0",
+    "referencing>=0.30",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-    "black>=23.0",
-    "ruff>=0.1.0",
-]
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
 
-[tool.black]
-line-length = 100
-
-[tool.ruff]
-select = ["E", "F", "W", "I"]
-line-length = 100
+[tool.setuptools]
+packages = ["agent_lib"]

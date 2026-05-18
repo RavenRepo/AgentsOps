@@ -1,0 +1,72 @@
+# Buildroom task runner (just <recipe>)
+#
+# Run from inside /opt/agent-data/buildroom on the VPS.
+
+set shell := ["bash", "-uc"]
+set positional-arguments
+
+VENV := ".venv"
+PY := VENV / "bin" / "python"
+PIP := VENV / "bin" / "uv pip"
+
+# Default: list recipes
+default:
+    @just --list --unsorted
+
+# One-time setup of the buildroom venv + deps
+setup:
+    uv venv
+    uv pip install jsonschema referencing
+    @echo "venv ready at .venv"
+
+# Validate every artifact under examples/demo-room
+validate-all:
+    {{PY}} scripts/validate.py --all
+
+# Validate a specific file
+validate FILE:
+    {{PY}} scripts/validate.py "$1"
+
+# Render the operator cockpit from the demo summary
+cockpit:
+    {{PY}} scripts/render_cockpit.py \
+        examples/demo-room/operator/demo-signal-bridge.operator-summary.json \
+        --output examples/demo-room/operator/operator-cockpit.html \
+        --validate
+    @echo "cockpit at examples/demo-room/operator/operator-cockpit.html"
+
+# Render the cockpit from a specific summary file
+cockpit-from FILE OUT="examples/demo-room/operator/operator-cockpit.html":
+    {{PY}} scripts/render_cockpit.py "$1" --output "$2" --validate
+
+# Show schemas and their sizes
+schemas:
+    @ls -lh schemas/*.schema.json | awk '{print $9"\t"$5}'
+
+# Count artifacts in demo-room
+stats:
+    @echo "schemas:    $(ls schemas/*.schema.json | wc -l)"
+    @echo "demo files: $(find examples/demo-room -type f -name '*.json' | wc -l)"
+    @echo "scripts:    $(ls scripts/*.py | wc -l)"
+
+# Quick smoke test: validate-all + cockpit + check it has GOKU branding
+smoke:
+    @just validate-all
+    @just cockpit
+    @grep -q 'GOKU' examples/demo-room/operator/operator-cockpit.html && echo "smoke: ok"
+
+# Apply secrets from /opt/agent-data/secrets.env into Hermes/OpenClaw configs
+apply-secrets:
+    @test -f /opt/agent-data/secrets.env || (echo "FAIL: /opt/agent-data/secrets.env not found"; exit 1)
+    {{PY}} scripts/apply_secrets.py
+
+# Show current model configuration in both runtimes
+show-models:
+    @echo "=== Hermes default model ==="
+    @grep -E "^\s*default:" /opt/agent-data/hermes/config.yaml | head -1 || echo "(not found)"
+    @echo
+    @echo "=== Hermes .env (managed keys) ==="
+    @grep -E "^(OPENROUTER_API_KEY|OPENCODE_ZEN_API_KEY|NVIDIA_API_KEY)=" /opt/agent-data/hermes/.env 2>/dev/null | sed 's/=.\{6\}.*$/=***/' || echo "(no managed keys set)"
+    @echo
+    @echo "=== OpenClaw model ==="
+    @cat /opt/agent-data/openclaw/openclaw.json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('agent',{}).get('model','(not set)'))"

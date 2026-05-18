@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/trust-report.schema.json",
+  "title": "Trust report",
+  "description": "Periodic summary of room health. Compresses recent verification deltas into a state.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "report_id",
+    "produced_by",
+    "produced_at",
+    "window_start",
+    "window_end",
+    "trust_state",
+    "metrics"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "report_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "window_start": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "window_end": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "trust_state": { "$ref": "_common.schema.json#/$defs/trust-state" },
+    "previous_trust_state": { "$ref": "_common.schema.json#/$defs/trust-state" },
+    "summary": { "type": "string", "maxLength": 4000 },
+    "metrics": {
+      "type": "object",
+      "required": ["builds_total"],
+      "additionalProperties": false,
+      "properties": {
+        "builds_total": { "type": "integer", "minimum": 0 },
+        "builds_passed": { "type": "integer", "minimum": 0 },
+        "builds_failed": { "type": "integer", "minimum": 0 },
+        "deltas_full_agreement": { "type": "integer", "minimum": 0 },
+        "deltas_partial_agreement": { "type": "integer", "minimum": 0 },
+        "deltas_disagreement": { "type": "integer", "minimum": 0 },
+        "qa_caught_drift_count": { "type": "integer", "minimum": 0 },
+        "regressions_detected": { "type": "integer", "minimum": 0 },
+        "force_approvals_used": { "type": "integer", "minimum": 0 },
+        "average_risk_score": { "type": "number", "minimum": 0 }
+      }
+    },
+    "recent_concerns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["concern", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "concern": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "minor", "major", "blocking"]
+          },
+          "build_id": { "type": "string" },
+          "first_seen_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+          "occurrences": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["recommendation"],
+        "additionalProperties": false,
+        "properties": {
+          "recommendation": { "type": "string" },
+          "for_agent": { "$ref": "_common.schema.json#/$defs/agent-id" },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "normal", "high", "urgent"]
+          }
+        }
+      }
+    },
+    "state_transition_reason": {
+      "type": "string",
+      "description": "If trust_state != previous_trust_state, why",
+      "maxLength": 2000
+    }
+  }
+}

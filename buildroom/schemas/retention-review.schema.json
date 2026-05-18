@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/retention-review.schema.json",
+  "title": "Retention review",
+  "description": "Recommendation for what to do with a built artifact: keep / improve / park / prune.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "review_id",
+    "artifact_id",
+    "produced_by",
+    "produced_at",
+    "recommendation",
+    "reasoning"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "review_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "artifact_id": {
+      "type": "string",
+      "description": "Identifier of the artifact being reviewed (build_id, file path, project slug, etc.)"
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": ["build", "project", "file", "dossier", "skill", "fascination"]
+    },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "recommendation": { "$ref": "_common.schema.json#/$defs/retention-recommendation" },
+    "reasoning": { "type": "string", "minLength": 20, "maxLength": 4000 },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "last_referenced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+        "last_modified_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+        "mention_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many times mentioned in subsequent dreamer walks"
+        },
+        "downstream_dependencies": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "How many other artifacts depend on this one"
+        },
+        "trust_state_at_build": { "$ref": "_common.schema.json#/$defs/trust-state" },
+        "verification_passed": { "type": "boolean" }
+      }
+    },
+    "follow_up_action": {
+      "type": "object",
+      "description": "Concrete next step if recommendation is improve/park/prune",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "create_improvement_idea",
+            "move_to_archive",
+            "delete_files",
+            "update_dependencies",
+            "no_action_needed"
+          ]
+        },
+        "target_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "scheduled_for": { "$ref": "_common.schema.json#/$defs/timestamp" }
+      }
+    },
+    "operator_decision_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for prune actions; the agent never deletes without operator confirmation"
+    }
+  }
+}

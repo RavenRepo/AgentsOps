@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://buildroom.local/schemas/operator-summary.schema.json",
+  "title": "Operator summary",
+  "description": "The data that backs the Operator Cockpit / Control Room view. Read-only state.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "summary_id",
+    "produced_by",
+    "produced_at",
+    "trust_state",
+    "lanes"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "$ref": "_common.schema.json#/$defs/schema-version" },
+    "summary_id": { "$ref": "_common.schema.json#/$defs/slug" },
+    "produced_by": { "$ref": "_common.schema.json#/$defs/agent-id" },
+    "produced_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "start": { "$ref": "_common.schema.json#/$defs/timestamp" },
+        "end": { "$ref": "_common.schema.json#/$defs/timestamp" }
+      }
+    },
+    "trust_state": { "$ref": "_common.schema.json#/$defs/trust-state" },
+    "lanes": {
+      "type": "object",
+      "description": "Counts and items per lifecycle column (kanban view)",
+      "required": [
+        "watching",
+        "ready",
+        "queued",
+        "active",
+        "built",
+        "ghost",
+        "broken"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "watching": { "$ref": "#/$defs/lane" },
+        "ready":    { "$ref": "#/$defs/lane" },
+        "queued":   { "$ref": "#/$defs/lane" },
+        "active":   { "$ref": "#/$defs/lane" },
+        "built":    { "$ref": "#/$defs/lane" },
+        "ghost":    { "$ref": "#/$defs/lane" },
+        "broken":   { "$ref": "#/$defs/lane" }
+      }
+    },
+    "agent_states": {
+      "type": "object",
+      "description": "Last-known status per agent profile",
+      "additionalProperties": false,
+      "properties": {
+        "research-agent": { "$ref": "#/$defs/agent-state" },
+        "dreamer":        { "$ref": "#/$defs/agent-state" },
+        "main":           { "$ref": "#/$defs/agent-state" },
+        "coder":          { "$ref": "#/$defs/agent-state" },
+        "qa":             { "$ref": "#/$defs/agent-state" },
+        "trust":          { "$ref": "#/$defs/agent-state" },
+        "retention":      { "$ref": "#/$defs/agent-state" },
+        "content":        { "$ref": "#/$defs/agent-state" }
+      }
+    },
+    "alerts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["message", "severity"],
+        "additionalProperties": false,
+        "properties": {
+          "message": { "type": "string" },
+          "severity": {
+            "type": "string",
+            "enum": ["info", "warning", "error", "critical"]
+          },
+          "source": { "$ref": "_common.schema.json#/$defs/agent-id" },
+          "raised_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+          "link": { "type": "string" }
+        }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "description": "Recent events across the system",
+      "items": {
+        "type": "object",
+        "required": ["at", "kind", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "research-refresh",
+              "walk",
+              "intent-review",
+              "main-review",
+              "build-started",
+              "build-completed",
+              "qa-verified",
+              "delta-computed",
+              "trust-change",
+              "retention-recommendation",
+              "operator-action"
+            ]
+          },
+          "summary": { "type": "string", "maxLength": 500 },
+          "agent": { "$ref": "_common.schema.json#/$defs/agent-id" },
+          "artifact_id": { "type": "string" }
+        }
+      }
+    },
+    "recent_research": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "last_run_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+        "topics_active": { "type": "integer", "minimum": 0 },
+        "verification_queue_depth": { "type": "integer", "minimum": 0 },
+        "degraded_collectors": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "lane": {
+      "type": "object",
+      "required": ["count", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "count": { "type": "integer", "minimum": 0 },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "title"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "since": { "$ref": "_common.schema.json#/$defs/timestamp" },
+              "risk_band": { "$ref": "_common.schema.json#/$defs/risk-band" },
+              "owner": { "$ref": "_common.schema.json#/$defs/agent-id" }
+            }
+          }
+        }
+      }
+    },
+    "agent-state": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["idle", "running", "blocked", "error", "disabled"]
+        },
+        "last_run_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+        "last_run_outcome": {
+          "type": "string",
+          "enum": ["success", "partial", "failure", "n/a"]
+        },
+        "next_run_at": { "$ref": "_common.schema.json#/$defs/timestamp" },
+        "queue_depth": { "type": "integer", "minimum": 0 },
+        "current_focus": { "type": "string", "maxLength": 200 }
+      }
+    }
+  }
+}
