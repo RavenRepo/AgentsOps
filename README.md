@@ -444,6 +444,26 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed guidelines and contributio
 
 ---
 
+## 🙏 Attribution & Credits
+
+**Goku** is built on the innovative work and research of **[gkisokay](https://github.com/gkisokay)**, whose groundbreaking articles and architectural principles inspired the core workflow and design philosophy of this framework.
+
+| Role | Contributor | Contribution |
+|------|-------------|--------------|
+| **Workflow & Architecture Inspiration** | [gkisokay](https://github.com/gkisokay) | Original research, design patterns, and compound judgment framework concepts |
+| **Implementation & Repository** | Repository Maintainers | Goku framework, buildroom library, Hermes profiles, and production integration |
+
+### Key Influences
+
+- **Contract-Driven Architecture** — Inspired by gkisokay's research on deterministic agent systems
+- **No Self-Approval Pattern** — Core principle from articles on auditable AI workflows  
+- **Schema Validation Gates** — Architectural pattern for preventing drift and ensuring determinism
+- **Append-Only Audit Trails** — Security approach pioneered in the original research
+
+> Standing on the shoulders of giants — Goku is a production implementation of groundbreaking research in compound judgment systems.
+
+---
+
 ## 📄 License
 
 [MIT](./LICENSE) — Use for commercial and private projects.
